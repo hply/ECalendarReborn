@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_card_bg"
+    android:padding="12dp">
+    <TextView android:id="@+id/widget_date" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textSize="15sp" android:textStyle="bold" android:textColor="#B23A2E" />
+    <TextView android:id="@+id/widget_lunar" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textSize="13sp" android:textColor="#7A2A21" android:layout_marginTop="2dp" />
+    <TextView android:id="@+id/widget_yiji" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textSize="12sp" android:textColor="#444444" android:layout_marginTop="6dp" android:maxLines="3" />
+    <TextView android:id="@+id/widget_events" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="6dp" android:maxLines="3" />
+</LinearLayout>

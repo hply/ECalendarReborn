@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">中华万年历</string>
+    <string name="widget_calendar_label">日历小组件（4x2）</string>
+    <string name="widget_note_label">便签小组件（2x2）</string>
+    <string name="widget_empty">暂无日程</string>
+</resources>

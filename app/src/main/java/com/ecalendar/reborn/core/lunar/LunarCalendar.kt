@@ -86,8 +86,42 @@ object LunarCalendar {
         return BASE_DATE.plusDays((offset + day - 1).toLong())
     }
 
-    /** 公历 → 农历 */
+    /**
+     * 公历 → 农历（含节日）。
+     *
+     * 注意：节日聚合在 [Festivals] 内部，那里只能调用不含节日的 [raw]。
+     * 若让 [Festivals] 回调本函数就会出现「solarToLunar → Festivals.of → solarToLunar」的
+     * 无限递归（v10.0.10-reborn.1 启动崩溃即此问题，StackOverflowError）。
+     */
     fun solarToLunar(date: LocalDate): LunarDate {
+        val core = raw(date)
+        val term = SolarTerm.nameOf(date)
+        return LunarDate(
+            lunarYear = core.year,
+            lunarMonth = core.month,
+            lunarDay = core.day,
+            isLeapMonth = core.isLeap,
+            monthDays = core.monthDays,
+            leapMonth = core.leap,
+            yearGanZhi = Ganzhi.yearGanZhi(core.year),
+            zodiac = Ganzhi.zodiac(core.year),
+            solarTerm = term,
+            festivals = Festivals.of(date, core.month, core.day, core.isLeap, term),
+        )
+    }
+
+    /** 农历原始换算结果（不含节日），供内部模块使用，绝不回调节日计算 */
+    internal data class Raw(
+        val year: Int,
+        val month: Int,
+        val day: Int,
+        val isLeap: Boolean,
+        val monthDays: Int,
+        val leap: Int,
+    )
+
+    /** 只做公历→农历的纯算术换算，不做节日聚合，因此可安全地被 Festivals 调用 */
+    internal fun raw(date: LocalDate): Raw {
         require(isSupported(date.year)) { "农历数据仅覆盖 1900–2100 年：$date" }
         var offset = java.time.temporal.ChronoUnit.DAYS.between(BASE_DATE, date).toInt()
         var year = MIN_YEAR
@@ -122,20 +156,14 @@ object LunarCalendar {
             }
         }
         require(resolved) { "农历换算越界：$date" }
-        val lDay = offset + 1
-        val term = SolarTerm.nameOf(date)
-        val gz = Ganzhi.yearGanZhi(year)
-        return LunarDate(
-            lunarYear = year,
-            lunarMonth = month.coerceIn(1, 12),
-            lunarDay = lDay,
-            isLeapMonth = isLeap,
-            monthDays = monthDays(year, month.coerceIn(1, 12)),
-            leapMonth = leap,
-            yearGanZhi = gz,
-            zodiac = Ganzhi.zodiac(year),
-            solarTerm = term,
-            festivals = Festivals.of(date, month.coerceIn(1, 12), lDay, isLeap, term),
+        val safeMonth = month.coerceIn(1, 12)
+        return Raw(
+            year = year,
+            month = safeMonth,
+            day = offset + 1,
+            isLeap = isLeap,
+            monthDays = monthDays(year, safeMonth),
+            leap = leap,
         )
     }
 }

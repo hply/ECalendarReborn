@@ -63,12 +63,17 @@ object Festivals {
         return list.joinToString("·")
     }
 
-    /** 除夕：农历腊月最后一天 */
+    /**
+     * 除夕：农历腊月最后一天。
+     *
+     * 这里只能调用 [LunarCalendar.raw]（纯算术、不含节日），绝不能调用
+     * [LunarCalendar.solarToLunar]，否则借 [of] 形成无限递归（v10.0.10-reborn.1 启动崩溃原因）。
+     */
     private fun isLunarNewYearEve(date: LocalDate): Boolean {
-        val lunar = LunarCalendar.solarToLunar(date)
-        if (lunar.lunarMonth != 12) return false
-        val tomorrow = LunarCalendar.solarToLunar(date.plusDays(1))
-        return tomorrow.lunarMonth == 1 && tomorrow.lunarDay == 1
+        val today = LunarCalendar.raw(date)
+        if (today.month != 12 || today.isLeap) return false
+        val tomorrow = LunarCalendar.raw(date.plusDays(1))
+        return tomorrow.month == 1 && tomorrow.day == 1 && !tomorrow.isLeap
     }
 
     /** 按星期计算的浮动节日 */
